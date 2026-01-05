@@ -10,7 +10,7 @@ export async function login(formData: FormData) {
   const password = formData.get('password') as string
 
 
-  // 1️⃣ Lookup email by username
+  // Lookup email by username
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('email')
@@ -23,7 +23,7 @@ export async function login(formData: FormData) {
   }
 
 
-  // 2️⃣ Authenticate using email
+  // Authenticate using email
   const { error } = await supabase.auth.signInWithPassword({
     email: profile.email,
     password
