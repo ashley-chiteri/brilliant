@@ -4,18 +4,33 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function login(formData: FormData) {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createSupabaseServerClient()
 
-  const email = formData.get('email') as string
+  const username = formData.get('username') as string
   const password = formData.get('password') as string
 
+
+  // 1️⃣ Lookup email by username
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('username', username)
+    .single()
+
+
+  if (profileError || !profile?.email) {
+    return { error: 'Invalid username or password' + profileError?.message || '' }
+  }
+
+
+  // 2️⃣ Authenticate using email
   const { error } = await supabase.auth.signInWithPassword({
-    email,
+    email: profile.email,
     password
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: 'Invalid username or password' + error.message }
   }
 
   redirect('/auth-redirect')
